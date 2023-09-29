@@ -38,7 +38,7 @@ export class UserRepository {
   }
 
   async findUserByEmail(email: string) {
-    return await this.prisma.user.findUnique({
+    return await this.prisma.user.findFirst({
       where: {
         email,
       },
@@ -46,7 +46,7 @@ export class UserRepository {
   }
 
   async findUserByUsername(username: string) {
-    return await this.prisma.user.findUnique({
+    return await this.prisma.user.findFirst({
       where: {
         username,
       },
