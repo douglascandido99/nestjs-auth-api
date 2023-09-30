@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Patch,
@@ -22,6 +23,7 @@ import { CleanUser } from './repository/protocols/clean-user.protocol';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @HttpCode(200)
   @Post('signup')
   async signUp(@Body() dto: CreateUserDTO): Promise<User> {
     return await this.userService.signUp(dto);
