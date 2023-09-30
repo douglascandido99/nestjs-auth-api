@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { User } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserRepository } from 'src/user/repository/user.repository';
 
@@ -12,7 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { id: number; email: string; username: string }) {
+  async validate(payload: {
+    id: number;
+    email: string;
+    username: string;
+  }): Promise<User> {
     try {
       const user = await this.user.findUserById(payload.id);
 

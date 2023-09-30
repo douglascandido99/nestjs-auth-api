@@ -16,7 +16,7 @@ export class AuthService {
     private readonly jwt: JwtRepository,
   ) {}
 
-  async login(dto: LoginUserDTO) {
+  async login(dto: LoginUserDTO): Promise<{ accessToken: string }> {
     const { email, username, password } = dto;
 
     const [emailLogin, usernameLogin] = await Promise.all([

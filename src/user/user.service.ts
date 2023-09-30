@@ -11,6 +11,8 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { AuthRepository } from 'src/auth/repository/auth.repository';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
+import { User } from '@prisma/client';
+import { CleanUser } from './repository/protocols/clean-user.protocol';
 
 @Injectable()
 export class UserService {
@@ -19,7 +21,7 @@ export class UserService {
     private readonly auth: AuthRepository,
   ) {}
 
-  async signUp(dto: CreateUserDTO) {
+  async signUp(dto: CreateUserDTO): Promise<User> {
     const { name, username, email, password } = dto;
 
     const [existentEmail, existentUsername] = await Promise.all([
@@ -27,10 +29,15 @@ export class UserService {
       this.user.findUserByUsername(username),
     ]);
 
-    if (existentEmail)
+    if (existentEmail && existentUsername) {
+      throw new ConflictException(
+        'Both e-mail and username are already in use.',
+      );
+    } else if (existentEmail) {
       throw new ConflictException('This e-mail is already in use.');
-    if (existentUsername)
+    } else if (existentUsername) {
       throw new ConflictException('This username is already in use.');
+    }
 
     try {
       const hash = await this.auth.hashPassword(password);
@@ -47,7 +54,7 @@ export class UserService {
     }
   }
 
-  async getUserById(id: number) {
+  async getUserById(id: number): Promise<User> {
     const user = await this.user.findUserById(id);
 
     if (!user) throw new NotFoundException('User not found.');
@@ -57,11 +64,11 @@ export class UserService {
     return user;
   }
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<CleanUser[]> {
     return await this.user.getAllUsers();
   }
 
-  async updateUserInfo(id: number, dto: UpdateUserDTO) {
+  async updateUserInfo(id: number, dto: UpdateUserDTO): Promise<User | null> {
     const userId = await this.user.findUserById(id);
 
     if (!userId) throw new NotFoundException('User not found.');
@@ -75,7 +82,10 @@ export class UserService {
     return updatedUser;
   }
 
-  async updatePassword(id: number, dto: UpdatePasswordDTO) {
+  async updatePassword(
+    id: number,
+    dto: UpdatePasswordDTO,
+  ): Promise<{ msg: string }> {
     const user = await this.user.findUserById(id);
 
     if (!user) throw new NotFoundException('User not found.');
@@ -100,7 +110,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: number) {
+  async deleteUser(id: number): Promise<{ msg: string }> {
     const userId = await this.user.findUserById(id);
 
     if (!userId) throw new NotFoundException('User not found.');
