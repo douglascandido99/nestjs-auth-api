@@ -15,6 +15,7 @@ import { GetUser } from 'src/auth/decorator/get-user.decorator';
 import { User } from '@prisma/client';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { UpdatePasswordDTO } from './dto/update-password.dto';
 
 @Controller('users')
 export class UserController {
@@ -47,6 +48,15 @@ export class UserController {
   @Patch('me')
   async updateUser(@GetUser('id') id: number, @Body() dto: UpdateUserDTO) {
     return await this.userService.updateUserInfo(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  async updatePassword(
+    @GetUser('id') id: number,
+    @Body() dto: UpdatePasswordDTO,
+  ) {
+    return await this.userService.updatePassword(id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
