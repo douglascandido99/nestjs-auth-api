@@ -12,6 +12,19 @@ export class UserRepository {
     });
   }
 
+  async getAllUsers() {
+    return await this.prisma.user.findMany({
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        name: true,
+        email: true,
+        username: true,
+      },
+    });
+  }
+
   async updateUser(id: number, data: Prisma.UserUpdateInput) {
     return await this.prisma.user.update({
       where: {
