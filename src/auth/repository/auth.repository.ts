@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import * as argon from 'argon2';
 
 @Injectable()
 export class AuthRepository {
-  constructor(private readonly jwt: JwtService) {}
+  async validatePassword(hash: string, password: string) {
+    return await argon.verify(hash, password);
+  }
 
-  async createAccessToken(payload: { id: number; u: string; e: string }) {
-    return await this.jwt.signAsync(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES,
-    });
+  async hashPassword(password: string) {
+    return await argon.hash(password);
+  }
+
+  async comparePassword(newPassword: string, newPasswordCheck: string) {
+    if (newPassword !== newPasswordCheck)
+      throw new BadRequestException('Password must match.');
   }
 }
