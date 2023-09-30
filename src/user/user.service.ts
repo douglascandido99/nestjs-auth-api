@@ -43,7 +43,7 @@ export class UserService {
 
       return createdUser;
     } catch (error) {
-      throw new InternalServerErrorException('Something went wrong.');
+      throw new InternalServerErrorException('Failed to create user.');
     }
   }
 

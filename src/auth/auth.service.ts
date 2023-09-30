@@ -34,7 +34,8 @@ export class AuthService {
       password,
     );
 
-    if (!passwordMatches) throw new UnauthorizedException('Invalid password.');
+    if (!passwordMatches)
+      throw new UnauthorizedException('Incorrect password.');
 
     const accessTokenPayload = {
       id: user.id,
