@@ -4,15 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserRepository } from 'src/user/repository/user.repository';
-import { AuthRepository } from './repository/auth.repository';
 import { LoginUserDTO } from './dto/login-user.dto';
-import * as argon from 'argon2';
+import { AuthRepository } from './repository/auth.repository';
+import { JwtRepository } from './repository/jwt.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly user: UserRepository,
     private readonly auth: AuthRepository,
+    private readonly jwt: JwtRepository,
   ) {}
 
   async login(dto: LoginUserDTO) {
@@ -28,7 +29,10 @@ export class AuthService {
 
     const user = emailLogin || usernameLogin;
 
-    const passwordMatches = await this.validatePassword(user.hash, password);
+    const passwordMatches = await this.auth.validatePassword(
+      user.hash,
+      password,
+    );
 
     if (!passwordMatches) throw new UnauthorizedException('Invalid password.');
 
@@ -39,11 +43,7 @@ export class AuthService {
     };
 
     return {
-      accessToken: await this.auth.createAccessToken(accessTokenPayload),
+      accessToken: await this.jwt.createAccessToken(accessTokenPayload),
     };
-  }
-
-  private async validatePassword(hash: string, password: string) {
-    return await argon.verify(hash, password);
   }
 }
