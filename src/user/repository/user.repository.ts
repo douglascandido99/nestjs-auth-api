@@ -30,12 +30,14 @@ export class UserRepository {
     id: number,
     data: Prisma.UserUpdateInput,
   ): Promise<User | null> {
-    return await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: {
         id,
       },
       data,
     });
+
+    return user || null;
   }
 
   async deleteUser(id: number): Promise<User> {
@@ -46,27 +48,33 @@ export class UserRepository {
     });
   }
 
-  async findUserById(id: number): Promise<User> {
-    return await this.prisma.user.findFirst({
+  async findUserById(id: number): Promise<User | null> {
+    const user = await this.prisma.user.findFirst({
       where: {
         id,
       },
     });
+
+    return user || null;
   }
 
-  async findUserByEmail(email: string): Promise<User> {
-    return await this.prisma.user.findFirst({
+  async findUserByEmail(email: string): Promise<User | null> {
+    const user = await this.prisma.user.findFirst({
       where: {
         email,
       },
     });
+
+    return user || null;
   }
 
-  async findUserByUsername(username: string): Promise<User> {
-    return await this.prisma.user.findFirst({
+  async findUserByUsername(username: string): Promise<User | null> {
+    const user = await this.prisma.user.findFirst({
       where: {
         username,
       },
     });
+
+    return user || null;
   }
 }
