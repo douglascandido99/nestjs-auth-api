@@ -77,24 +77,29 @@ export class UserService {
 
     if (!userId) throw new NotFoundException('User not found.');
 
-    const [usedEmail, usedUsername] = await Promise.all([
+    const [existentEmail, existentUsername] = await Promise.all([
       this.user.findUserByEmail(dto.email),
       this.user.findUserByUsername(dto.username),
     ]);
 
     if (dto.email && dto.username) {
-      if (usedEmail && usedUsername && usedEmail.id && usedUsername.id !== id)
+      if (
+        existentEmail &&
+        existentUsername &&
+        existentEmail.id &&
+        existentUsername.id !== id
+      )
         throw new ConflictException(
           'Both e-mail and username are already in use.',
         );
     }
     if (dto.email) {
-      if (usedEmail && usedEmail.id !== id)
+      if (existentEmail && existentEmail.id !== id)
         throw new ConflictException('This e-mail is already in use.');
     }
 
     if (dto.username) {
-      if (usedUsername && usedUsername.id !== id)
+      if (existentUsername && existentUsername.id !== id)
         throw new ConflictException('This username is already in use.');
     }
 
@@ -126,7 +131,7 @@ export class UserService {
 
     if (dto.oldPassword === dto.newPassword)
       throw new BadRequestException(
-        'The new password cannot be the same as your current password.',
+        'Your new password cannot be the same as your current password.',
       );
 
     try {
