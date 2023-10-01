@@ -59,27 +59,56 @@ export class UserService {
 
     if (!user) throw new NotFoundException('User not found.');
 
-    delete user.hash;
+    try {
+      delete user.hash;
 
-    return user;
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get user.');
+    }
   }
 
   async getAllUsers(): Promise<CleanUser[]> {
     return await this.user.getAllUsers();
   }
 
-  async updateUserInfo(id: number, dto: UpdateUserDTO): Promise<User | null> {
+  async updateUserInfo(id: number, dto: UpdateUserDTO): Promise<User> {
     const userId = await this.user.findUserById(id);
 
     if (!userId) throw new NotFoundException('User not found.');
 
-    const user = await this.user.updateUser(id, dto);
+    const [usedEmail, usedUsername] = await Promise.all([
+      this.user.findUserByEmail(dto.email),
+      this.user.findUserByUsername(dto.username),
+    ]);
 
-    const updatedUser = { ...user };
+    if (dto.email && dto.username) {
+      if (usedEmail && usedUsername && usedEmail.id && usedUsername.id !== id)
+        throw new ConflictException(
+          'Both e-mail and username are already in use.',
+        );
+    }
+    if (dto.email) {
+      if (usedEmail && usedEmail.id !== id)
+        throw new ConflictException('This e-mail is already in use.');
+    }
 
-    delete updatedUser.hash;
+    if (dto.username) {
+      if (usedUsername && usedUsername.id !== id)
+        throw new ConflictException('This username is already in use.');
+    }
 
-    return updatedUser;
+    try {
+      const user = await this.user.updateUser(id, dto);
+
+      const updatedUser = { ...user };
+
+      delete updatedUser.hash;
+
+      return updatedUser;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update user.');
+    }
   }
 
   async updatePassword(
@@ -104,6 +133,7 @@ export class UserService {
       const hash = await this.auth.hashPassword(dto.newPassword);
 
       await this.user.updateUser(id, { hash: hash });
+
       return { msg: 'Password updated.' };
     } catch (error) {
       throw new InternalServerErrorException('Failed to update password.');
@@ -115,8 +145,12 @@ export class UserService {
 
     if (!userId) throw new NotFoundException('User not found.');
 
-    await this.user.deleteUser(id);
+    try {
+      await this.user.deleteUser(id);
 
-    return { msg: 'User deleted.' };
+      return { msg: 'User deleted.' };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete user.');
+    }
   }
 }
