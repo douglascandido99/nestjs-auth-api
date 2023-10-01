@@ -21,7 +21,10 @@ export class CreateUserDTO {
   @IsNotEmpty()
   @IsString()
   @Length(1, 30)
-  @Matches(RegExp(/^[A-Za-z0-9-_]+$/))
+  @Matches(RegExp(/^[A-Za-z0-9-_]+$/), {
+    message:
+      'Username can contain only letters, numbers, hyphens and underscores.',
+  })
   readonly username: string;
 
   @IsNotEmpty()
