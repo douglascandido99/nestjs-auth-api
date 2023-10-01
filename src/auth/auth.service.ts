@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -37,14 +38,18 @@ export class AuthService {
     if (!passwordMatches)
       throw new UnauthorizedException('Incorrect password.');
 
-    const accessTokenPayload = {
-      id: user.id,
-      u: user.username,
-      e: user.email,
-    };
+    try {
+      const accessTokenPayload = {
+        id: user.id,
+        u: user.username,
+        e: user.email,
+      };
 
-    return {
-      accessToken: await this.jwt.createAccessToken(accessTokenPayload),
-    };
+      return {
+        accessToken: await this.jwt.createAccessToken(accessTokenPayload),
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to login user.');
+    }
   }
 }
